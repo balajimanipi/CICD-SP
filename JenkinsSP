@@ -1,0 +1,35 @@
+node('master')
+
+{
+    stage('ContinuesDownload')
+    {
+        git 'https://github.com/balajimanipi/java-pro.git'
+    }
+    
+    stage('ContinuesBuild')
+    {
+        sh 'mvn package'
+    }
+    
+        
+    stage('ContinuesDeployment to Test env')
+    {
+        sh 'scp /var/lib/jenkins/workspace/Scprited_Pipeline/webapp/target/webapp.war root@172.31.86.193:/var/lib/tomcat9/webapps/testenv.war'
+    }
+    
+    stage('ContinuesTesting')
+    {
+        git 'https://github.com/balajimanipi/FunctionlTesting.git'
+        sh 'java -jar /var/lib/jenkins/workspace/Scprited_Pipeline/testing.jar'
+        
+    }
+    
+    stage('ContinuesDeployment to Prod env')
+    
+    {
+        input message: 'Waiting for Approval from the DMadmin', submitter: 'DMadmin'
+        sh 'scp /var/lib/jenkins/workspace/Scprited_Pipeline/webapp/target/webapp.war root@172.31.28.254:/var/lib/tomcat9/webapps/prodenv.war'
+    }
+    
+    
+}
